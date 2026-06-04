@@ -1,11 +1,11 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/iyi.studio/',
+  base: '/',
   server: {
     port: 3000,
     host: true,
-    strictPort: true,
+    strictPort: false,
   },
   build: {
     outDir: 'dist',
