@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>iyi studio — built different.</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <style>
+        /* 1. V5 SELF-HOSTED FONTS */
+        @font-face { font-family: 'FuturaLTPro'; src: url('/FuturaLTPro-Light.woff2') format('woff2'); font-weight: 300; }
+        @font-face { font-family: 'FuturaLTPro'; src: url('/FuturaLTPro-Book.woff2') format('woff2'); font-weight: 400; }
+        @font-face { font-family: 'FuturaLTPro'; src: url('/FuturaLTPro-Medium.woff2') format('woff2'); font-weight: 500; }
+        @font-face { font-family: 'FuturaLTPro'; src: url('/FuturaLTPro-SemiBold.woff2') format('woff2'); font-weight: 600; }
+        @font-face { font-family: 'SpaceMonoV5'; src: url('/SpaceMono-Regular.woff2') format('woff2'); font-weight: 400; }
+        @font-face { font-family: 'SpaceMonoV5'; src: url('/SpaceMono-Bold.woff2') format('woff2'); font-weight: 700; }
+
+        :root {
+            --bg: #ffffff; --text: #000000; --orange: #ff5500; 
+            --grid-size: 40px; --grid-line: rgba(0, 0, 0, 0.12); --grid-line-white: rgba(255, 255, 255, 0.1);
+            --sidebar-w: 480px; --header-h-mobile: 120px; --stroke: 1px;
+        }
+
+        /* GLOBAL RESET & NO LIGATURES */
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; text-transform: lowercase !important; -webkit-font-smoothing: antialiased; 
+            font-variant-ligatures: none !important; font-feature-settings: "liga" 0 !important;
+        }
+        body { font-family: 'FuturaLTPro', sans-serif; color: var(--text); background-color: var(--bg); cursor: crosshair; overflow-x: hidden; }
+
+        /* FIXED INFINITE GRID */
+        body::before {
+            content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: var(--grid-size) var(--grid-size);
+        }
+
+        /* SIDEBAR & BRAND AREA */
+        aside {
+            width: var(--sidebar-w); height: 100vh; position: fixed; left: 0; top: 0;
+            border-right: 1px solid var(--text); background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(10px); 
+            display: flex; flex-direction: column; z-index: 100;
+        }
+        .desktop-logo-frame {
+            width: 100%; height: 200px !important; min-height: 200px; border-bottom: 1px solid var(--text);
+            display: flex; align-items: center; justify-content: center; background: white; transition: 0.2s; cursor: pointer;
+        }
+        .desktop-logo-frame:hover { background: var(--orange); }
+        .desktop-logo-frame:hover .logo-img { filter: brightness(0) invert(1); }
+        .logo-img { height: 100px; width: auto; transition: 0.2s; letter-spacing: -0.025em; }
+
+        .sidebar-content, #mobile-popup { padding: var(--grid-size); flex-grow: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+        .sidebar-content::-webkit-scrollbar, #mobile-popup::-webkit-scrollbar { display: none; }
+        .sidebar-section { margin-bottom: 40px; }
+        .sidebar-section h3 { margin-bottom: 10px; font-family: "SpaceMonoV5", monospace; font-size: 0.7rem; font-weight: 700 !important; color: var(--orange); letter-spacing: 2px; }
+        
+        .txt-medium { font-weight: 400; font-size: 1rem; text-align: left; }
+        .txt-light { font-weight: 300; font-size: 0.95rem; line-height: 1.6; text-align: left; letter-spacing: 0.01em; }
+        .profession { font-family: 'SpaceMonoV5', monospace; font-size: 0.65rem; display: block; margin: 4px 0 12px 0; color: rgba(0,0,0,0.5); font-weight: 400; text-align: left; text-transform: lowercase !important; font-feature-settings: "tnum" 1, "lnum" 1; letter-spacing: 0.05em; }
+        .project-specs { font-family: 'SpaceMonoV5', monospace; font-size: 0.65rem; opacity: 0.5; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px; text-transform: lowercase !important; font-feature-settings: "tnum" 1, "lnum" 1; letter-spacing: 0.05em; }
+        .contact-link { display: block; margin-top: 5px; text-decoration: underline !important; color: black !important; font-weight: 400; }
+
+        /* V5 LANG SWITCH */
+        .lang-switch { font-family: 'SpaceMonoV5', monospace; font-size: 0.7rem; display: inline-flex; align-items: baseline; cursor: pointer; user-select: none; padding: 10px 0; }
+        .lang-btn { opacity: 0.2; transition: 0.3s; pointer-events: none; }
+        .lang-btn.active { opacity: 1; color: var(--orange); font-weight: 700; }
+        .lang-switch .slash { opacity: 0.2; margin: 0 1px; }
+
+        /* MOBILE HEADER FIXES */
+        header {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: var(--header-h-mobile);
+            background: white; border-bottom: 1px solid var(--text); z-index: 3000;
+            padding: 0; justify-content: space-between; align-items: center;
+        }
+        .mobile-logo-img { height: 70px; width: auto; margin-left: 25px; }
+        .header-controls { display: flex; align-items: center; gap: 20px; height: 100%; }
+        #info-btn { 
+            background: var(--orange); color: white; border: none; height: 100%; width: 100px; 
+            font-family: 'SpaceMonoV5', monospace; font-weight: 700; font-size: 0.8rem; 
+            border-left: 1px solid var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        #mobile-popup { display: none; position: fixed; top: var(--header-h-mobile); left: 0; width: 100%; height: calc(100vh - var(--header-h-mobile)); background: white; z-index: 2000; padding: 40px 25px; padding-bottom: 120px; }
+
+        /* MAIN */
+        main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); position: relative; z-index: 5; background: transparent; }
+        .meta-strip { height: 80px; padding: 0 var(--grid-size); border-bottom: 1px solid var(--text); background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px); display: flex; justify-content: space-between; align-items: center; font-family: 'SpaceMonoV5', monospace; font-size: 0.7rem; position: sticky; top: 0; z-index: 50; }
+
+        /* VIDEOS SECTION */
+        .updates-container { display: flex; height: 400px; border-bottom: 1px solid var(--text); background: black; width: 100%; }
+        .video-box { position: relative; width: 50%; height: 100%; overflow: hidden; border-right: 1px solid var(--text); }
+        .video-box:last-child { border-right: none; }
+        .video-box video { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1); transition: 0.6s; opacity: 0.8; }
+        .video-box:hover video { filter: grayscale(0); opacity: 1; }
+        .tag { position: absolute; bottom: 20px; left: 20px; background: var(--orange); color: white; padding: 4px 12px; font-family: 'SpaceMonoV5'; font-size: 0.6rem; z-index: 10; }
+
+        /* V5 HERO SECTION REDESIGNED */
+        .hero-modular {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            width: 100%;
+            height: auto;
+            min-height: 700px;
+            padding-left: var(--grid-size);
+            padding-right: var(--grid-size);
+            padding-top: var(--grid-size);
+            padding-bottom: var(--grid-size);
+            gap: 48px;
+            border-bottom: 1px solid var(--text);
+            background: transparent;
+            overflow: visible;
+            transition: gap 1.8s cubic-bezier(0.16, 1, 0.3, 1), 
+                        padding-left 1.8s cubic-bezier(0.16, 1, 0.3, 1), 
+                        padding-right 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #slot-0, #slot-1, #slot-2 {
+            grid-row: 1;
+        }
+        #slot-3, #slot-4, #slot-5 {
+            grid-row: 2;
+        }
+
+        @media (min-width: 1101px) {
+            .hero-modular {
+                max-width: 1350px !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+        }
+
+        /* Fixed 760px container with 80px padding and text alignment in 4 corners and 2 centers */
+        @media (min-width: 769px) {
+            .hero-modular {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                grid-template-rows: repeat(2, 1fr) !important;
+                height: 760px !important;
+                min-height: 760px !important;
+                max-height: 760px !important;
+                padding: 80px !important;
+                box-sizing: border-box !important;
+                gap: 0 !important;
+            }
+            .hero-modular.sequence-finished {
+                grid-template-columns: repeat(3, 1fr) !important;
+                grid-template-rows: repeat(2, 1fr) !important;
+                height: 760px !important;
+                min-height: 760px !important;
+                max-height: 760px !important;
+                padding: 80px !important;
+                gap: 0 !important;
+            }
+            .hero-modular.sequence-finished #slot-0,
+            .hero-modular.sequence-finished #slot-1,
+            .hero-modular.sequence-finished #slot-2 {
+                grid-row: 1 !important;
+            }
+            .hero-modular.sequence-finished #slot-3, 
+            .hero-modular.sequence-finished #slot-4, 
+            .hero-modular.sequence-finished #slot-5 {
+                grid-row: 2 !important;
+            }
+
+            /* Slot geometries & positions */
+            #slot-0, #slot-1, #slot-2, #slot-3, #slot-4, #slot-5 {
+                transform: none !important;
+                height: 220px !important;
+                width: var(--slot-width, 360px) !important;
+                box-sizing: border-box !important;
+            }
+            #slot-0, #slot-1, #slot-2 {
+                grid-row: 1 !important;
+                align-self: start !important;
+            }
+            #slot-3, #slot-4, #slot-5 {
+                grid-row: 2 !important;
+                align-self: end !important;
+            }
+            #slot-0, #slot-3 {
+                grid-column: 1 !important;
+                justify-self: start !important;
+            }
+            #slot-1, #slot-4 {
+                grid-column: 2 !important;
+                justify-self: center !important;
+            }
+            #slot-2, #slot-5 {
+                grid-column: 3 !important;
+                justify-self: end !important;
+            }
+
+            /* Custom text alignment inside slot containers */
+            #slot-0 .hero-box-card, #slot-0 .hero-flying-card,
+            #slot-1 .hero-box-card, #slot-1 .hero-flying-card,
+            #slot-2 .hero-box-card, #slot-2 .hero-flying-card,
+            #slot-3 .hero-box-card, #slot-3 .hero-flying-card,
+            #slot-4 .hero-box-card, #slot-4 .hero-flying-card,
+            #slot-5 .hero-box-card, #slot-5 .hero-flying-card,
+            .flying-slot-0, .flying-slot-1, .flying-slot-2,
+            .flying-slot-3, .flying-slot-4, .flying-slot-5 {
+                text-align: center !important;
+                justify-content: center !important;
+                align-items: flex-start !important;
+                align-content: flex-start !important;
+            }
+        }
+
+        .hero-grid-slot {
+            position: relative;
+            border: none;
+            background: transparent;
+            display: flex;
+            align-items: stretch;
+            justify-content: stretch;
+            transition: all 0.5s cubic-bezier(0.15, 0.85, 0.3, 1);
+            aspect-ratio: 1.5;
+            box-sizing: border-box;
+        }
+
+        .hero-grid-slot.filled {
+            border: none;
+            background: transparent;
+        }
+
+        /* HERO CENTER STAGE OVERLAY */
+        #hero-center-stage {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: transparent; /* Totally transparent at start to see the grid lines */
+            backdrop-filter: none;
+            z-index: 200;
+            padding: var(--grid-size);
+            text-align: center;
+            transition: background 0.8s ease, backdrop-filter 0.8s ease, opacity 0.8s cubic-bezier(0.15, 0.85, 0.3, 1), visibility 0.8s;
+        }
+
+        /* Gentle background frost on replay screen so the button stands out on top of populated boxes */
+        #hero-center-stage.played {
+            background: transparent;
+            backdrop-filter: none;
+        }
+
+        #hero-center-stage.sequence-active {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .hero-center-text {
+            font-family: 'FuturaLTPro', sans-serif;
+            font-size: clamp(1.4rem, 2.8vw, 2.2rem);
+            font-weight: 400;
+            text-transform: uppercase;
+            color: var(--text);
+            max-width: 900px;
+            line-height: 1.35;
+            letter-spacing: -0.0125em;
+            margin-bottom: 35px;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: heroTextAppear 1.2s 0.3s cubic-bezier(0.15, 0.85, 0.3, 1) forwards;
+            transition: margin-bottom 0.5s ease, transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Zoom-in lead-up styles (4 seconds) */
+        #hero-center-stage.zooming .hero-center-text {
+            animation: slowZoomInText 4s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+            opacity: 1 !important;
+        }
+
+        #hero-center-stage.zooming .hero-play-btn {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: scale(0.6) !important;
+            transition: opacity 0.6s cubic-bezier(0.15, 0.85, 0.3, 1), transform 0.6s cubic-bezier(0.15, 0.85, 0.3, 1) !important;
+        }
+
+        #hero-center-stage.zooming ~ .hero-mute-btn {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transition: opacity 0.6s cubic-bezier(0.15, 0.85, 0.3, 1) !important;
+        }
+
+        /* Zoom-out final reveal styles (4 seconds) */
+        #hero-center-stage.zooming-out .hero-center-text {
+            animation: slowZoomOutText 4s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+            opacity: 1 !important;
+        }
+
+        #hero-center-stage.zooming-out .hero-play-btn {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: scale(0.6) !important;
+        }
+
+        #hero-center-stage.zooming-out ~ .hero-mute-btn {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        #hero-center-stage.played .hero-center-text {
+            margin-bottom: 12px;
+            animation: none !important;
+            transform: scale(1.0) !important;
+            opacity: 1 !important;
+        }
+
+        @keyframes slowZoomInText {
+            0% {
+                transform: scale(0.96);
+                opacity: 0;
+            }
+            15% {
+                opacity: 1;
+            }
+            82% {
+                transform: scale(1.08);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.12);
+                opacity: 0;
+            }
+        }
+
+        @keyframes slowZoomOutText {
+            0% {
+                transform: scale(1.25);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes heroTextAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-play-btn {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            transition: all 0.3s cubic-bezier(0.15, 0.85, 0.3, 1);
+            outline: none;
+        }
+
+        .hero-play-btn:hover {
+            background: transparent;
+            color: var(--orange);
+            transform: scale(1.15);
+            box-shadow: none;
+        }
+
+        .hero-play-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+            display: block;
+            transition: transform 0.3s cubic-bezier(0.15, 0.85, 0.3, 1);
+        }
+
+        .hero-play-btn:hover svg {
+            transform: scale(1.15);
+        }
+
+        /* MUTE/UNMUTE TTS AUDIO BUTTON */
+        .hero-mute-btn {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            z-index: 100;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            outline: none;
+            padding: 0;
+            margin: 0 !important;
+        }
+
+        .hero-mute-btn:hover {
+            background: transparent;
+            color: var(--orange);
+            transform: scale(1.15);
+        }
+
+        .hero-mute-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            display: block;
+            transition: transform 0.2s;
+        }
+
+        .hero-mute-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* FLYING / ANIMATING CARDS & DOCKED SLOTS */
+        .hero-box-card, .hero-flying-card {
+            width: 100%;
+            height: 100%;
+            max-width: var(--slot-width, 360px); /* Perfect desktop container width to yield exactly 4-5 lines of text */
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: flex-start; /* first lines align horizontally */
+            align-items: flex-start; /* first lines align horizontally */
+            text-align: center;
+            overflow: visible;
+            background: transparent;
+            border: none;
+            box-sizing: border-box;
+        }
+
+        .hero-flying-card {
+            position: absolute;
+            z-index: 150;
+            pointer-events: none;
+            aspect-ratio: 1.5;
+        }
+
+        /* When the card is highlighted in the center */
+        .hero-flying-card.at-center {
+            position: absolute;
+            transform: scale(1.4) !important; /* Elegant zoom factor while generating */
+            transform-origin: center center;
+            z-index: 250;
+        }
+
+        .hero-box-card.docked {
+            border: none;
+            padding: 20px;
+            background: transparent;
+        }
+
+        @keyframes cardPopIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .hero-word-span {
+            font-family: "SpaceMonoV5", monospace;
+            font-size: clamp(10px, 1.8vw, 12px);
+            color: var(--orange);
+            font-weight: 400;
+            line-height: 1.5;
+            text-transform: uppercase !important;
+            margin-right: 0.35em;
+            display: inline-block;
+            min-height: 1.25em;
+            opacity: 0;
+            transition: opacity 0.3s, font-size 1.8s cubic-bezier(0.16, 1, 0.3, 1), color 1.8s, font-family 1.8s;
+            letter-spacing: -0.015em;
+            word-spacing: -0.05em;
+            text-wrap: balance;
+        }
+
+        /* Unified typography during center animation stage to ensure perfect line-wrap and eliminate shifting */
+        .hero-flying-card.at-center .hero-word-span {
+            font-family: "SpaceMonoV5", monospace !important;
+            font-size: clamp(10px, 1.8vw, 12px) !important;
+            font-weight: 400 !important;
+            text-transform: uppercase !important;
+            color: var(--orange) !important;
+            line-height: 1.5 !important;
+            letter-spacing: -0.015em !important;
+            display: inline-block;
+            margin-right: 0.35em;
+            word-break: break-word;
+        }
+
+        @media (min-width: 1101px) {
+            .hero-word-span {
+                font-size: 13.5px !important;
+            }
+            .hero-flying-card.at-center .hero-word-span {
+                font-size: 13.5px !important;
+            }
+        }
+
+        .hero-line {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            min-height: 1.5em;
+            line-height: 1.5;
+            box-sizing: border-box;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 1400px) {
+            .hero-modular {
+                gap: 25px;
+                padding: 30px;
+            }
+        }
+
+        /* PROJECTS RE-ARCHITECTED */
+        .project-row { 
+            display: flex; 
+            flex-direction: column; 
+            width: 100%; 
+            border-top: 1px solid var(--text); 
+            border-bottom: 1px solid var(--text); 
+            background: transparent; 
+            margin-top: 80px; 
+        }
+        #project-feed .project-row:first-child { margin-top: 0; }
+        
+        .project-info-row {
+            display: flex;
+            width: 100%;
+            padding: 40px var(--grid-size);
+            background: white;
+            gap: var(--grid-size);
+            min-height: 200px;
+        }
+        .info-col { display: flex; flex-direction: column; gap: 12px; }
+        .info-col-1 { flex: 0 0 140px; }
+        .info-col-2 { flex: 0 0 240px; }
+        .info-col-3 { flex: 1; }
+        
+        .info-item { display: flex; flex-direction: column; gap: 4px; }
+        
+        .info-label { 
+            font-family: 'SpaceMonoV5', monospace; 
+            font-size: 0.55rem; 
+            color: var(--orange); 
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.8;
+        }
+        .info-value {
+            font-family: 'SpaceMonoV5', monospace;
+            font-size: 0.75rem;
+            color: var(--text);
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+        .info-title { 
+            font-size: 1.1rem; 
+            font-weight: 500; 
+            margin-bottom: 15px; 
+            text-transform: uppercase; 
+        }
+        .info-body { 
+            font-size: 0.85rem; 
+            line-height: 1.6; 
+            color: rgba(0,0,0,0.7); 
+            max-width: 800px;
+        }
+
+        .slider-container { 
+            width: 100%; 
+            height: 65vh; 
+            position: relative; 
+            background: #eee; 
+            overflow: hidden; 
+            touch-action: pan-y;
+            border-top: 1px solid var(--text);
+        }
+        .slider-track { display: flex; height: 100%; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform; cursor: pointer; }
+        .slide-img { min-width: 100%; height: 100%; object-fit: cover; filter: grayscale(1); transition: 0.6s; pointer-events: none; }
+        .slider-container:hover .slide-img { filter: grayscale(0); }
+        
+        .nav-zone { width: 80px; height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; cursor: pointer; pointer-events: auto; position: absolute; z-index: 10; top:0; }
+        .slider-container:hover .nav-zone { opacity: 1; }
+        .nav-triangle { color: var(--orange); font-size: 1.5rem; transition: 0.2s; }
+               footer { padding: var(--grid-size); background: white; display: flex; justify-content: space-between; font-family: 'SpaceMonoV5'; font-size: 0.7rem; z-index: 100; position: relative; border-top: 1px solid var(--text); margin-top: 80px; }
+ 
+        /* LIGHTBOX */
+        #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 5000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .lb-grid-overlay { position: absolute; inset: 0; background-image: linear-gradient(var(--grid-line-white) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line-white) 1px, transparent 1px); background-size: var(--grid-size) var(--grid-size); pointer-events: none; z-index: -1; }
+        .lb-modal { position: relative; width: fit-content; max-width: 70vw; height: fit-content; max-height: 85vh; display: flex; align-items: center; justify-content: center; }
+        .lb-modal img { max-width: 100%; max-height: 85vh; border: 1px solid black; background: white; }
+        .lb-close { position: fixed; top: 30px; right: 30px; font-size: 1.2rem; color: var(--orange); cursor: pointer; font-family: sans-serif; border: none; background: none; z-index: 5010; }
+        .lb-nav-zone { position: fixed; top: 0; height: 100%; width: 50%; display: flex; align-items: center; cursor: pointer; }
+        .lb-dots { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+        .dot { width: 6px; height: 6px; background: white; border-radius: 50%; opacity: 0.3; transition: 0.3s; }
+        .dot.active { opacity: 1; background: var(--orange); transform: scale(1.6); }
+
+        #game-layer { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+        .game-token { position: fixed; width: var(--grid-size); height: var(--grid-size); display: flex; align-items: center; justify-content: center; font-family: 'SpaceMonoV5'; font-weight: 700; font-size: 1.2rem; animation: tokenIn 0.3s forwards; }
+        @keyframes winPulse { from { transform: scale(1); } to { transform: scale(1.3); color: var(--orange); } }
+
+        @media (max-width: 1100px) {
+            aside { display: none; } header { display: flex; }
+            main { margin-left: 0; width: 100%; margin-top: var(--header-h-mobile); }
+            .updates-container { flex-direction: column; height: auto; }
+            .updates-container .video-box { width: 100%; height: 300px; border-right: none; border-bottom: 1px solid var(--text); }
+            .updates-container .video-box:last-child { border-bottom: none; }
+            .hero-modular { 
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                grid-template-rows: repeat(6, auto) !important;
+                justify-items: center !important;
+                height: auto !important; 
+                padding: 40px var(--grid-size) 120px var(--grid-size) !important;
+                gap: 36px !important;
+                overflow: visible !important;
+                transition: gap 1.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            }
+            #slot-0, #slot-1, #slot-2, #slot-3, #slot-4, #slot-5 {
+                transform: none !important;
+                justify-self: center !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            .hero-modular.sequence-finished {
+                gap: 16px !important;
+                grid-template-rows: repeat(7, auto) !important;
+            }
+            .hero-box-card, .hero-flying-card:not(.at-center) {
+                text-align: center !important;
+            }
+            .hero-modular.sequence-finished #hero-center-stage {
+                position: relative !important;
+                inset: auto !important;
+                grid-row: 4 !important;
+                grid-column: 1 !important;
+                transform: none !important;
+                opacity: 1 !important;
+                margin: 40px auto 100px auto !important;
+                padding: 0 !important;
+            }
+            .hero-modular.sequence-finished #slot-0 { grid-row: 1 !important; }
+            .hero-modular.sequence-finished #slot-1 { grid-row: 2 !important; }
+            .hero-modular.sequence-finished #slot-2 { grid-row: 3 !important; }
+            .hero-modular.sequence-finished #slot-3 { grid-row: 5 !important; }
+            .hero-modular.sequence-finished #slot-4 { grid-row: 6 !important; }
+            .hero-modular.sequence-finished #slot-5 { grid-row: 7 !important; }
+            .project-row { flex-direction: column !important; height: auto; border-bottom: 1px solid var(--text) !important; margin-top: 80px !important; border-top: 1px solid var(--text) !important; }
+            #project-feed .project-row:first-child { margin-top: 0 !important; }
+            .project-info-row { 
+                display: flex;
+                flex-direction: row; 
+                flex-wrap: wrap;
+                padding: 30px 25px; 
+                gap: 30px; 
+            }
+            .info-col-1, .info-col-2 { flex: 1 1 40%; }
+            .info-col-3 { flex: 1 1 100%; }
+            .slider-container { height: 450px; border-top: 1px solid var(--text); }
+            .nav-zone, .meta-strip { display: none; }
+            footer { justify-content: center; margin-top: 80px !important; }
+            #footer-status, #coords { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-layer"></div>
+    <header><a href="index.html" class="mobile-logo-link"><img src="/logo.svg" alt="iyi studio" class="mobile-logo-img"></a><div class="header-controls"><div class="lang-switch" onclick="toggleLang()"><span class="lang-btn active en-toggle">en</span><span class="slash">/</span><span class="lang-btn tr-toggle">tr</span></div><button id="info-btn" onclick="togglePopup()">[info]</button></div></header>
+    <div id="mobile-popup"><div class="sidebar-info-container"></div></div>
+    <aside><a href="index.html" class="desktop-logo-frame"><img src="/logo.svg" alt="iyi studio" class="logo-img"></a><div class="sidebar-content"><div class="sidebar-info-container"></div></div></aside>
+    <main>
+        <div class="meta-strip"><div id="header-log-tag"></div><div class="lang-switch" onclick="toggleLang()"><span class="lang-btn active en-toggle">en</span><span class="slash">/</span><span class="lang-btn tr-toggle">tr</span></div><span id="clock">00:00:00</span></div>
+        <section class="updates-container">
+            <div class="video-box"><video autoplay muted loop playsinline><source src="/videos/video1.mp4" type="video/mp4"></video><div class="tag"><span>log_01: site_friction</span></div></div>
+            <div class="video-box"><video autoplay muted loop playsinline><source src="/videos/video2.mp4" type="video/mp4"></video><div class="tag"><span>log_02: structural_void</span></div></div>
+        </section>
+        <section class="hero-modular" id="hero-boxes"></section>
+        <div id="project-feed"></div>
+        <footer><span id="footer-status"></span><span id="footer-copy"></span><span id="coords">x: 000 y: 000</span></footer>
+    </main>
+    <div id="lightbox" onclick="closeLightbox()">
+        <div class="lb-grid-overlay"></div>
+        <div class="lb-modal" onclick="event.stopPropagation()"><button class="lb-close" onclick="closeLightbox()">✕</button><img id="lightbox-img" src=""><div class="lb-controls"><div class="lb-nav-zone" style="left:0" onclick="changeLightbox(-1)"></div><div class="lb-nav-zone" style="right:0" onclick="changeLightbox(1)"></div><div class="lb-dots" id="lb-dots"></div></div></div>
+    </div>
+
+    <script>
+        if (history.scrollRestoration) { history.scrollRestoration = 'manual'; } window.scrollTo(0, 0);
+
+        const RANDOM_WORDS = ["STRUCTURE", "MODULAR", "SPATIAL", "LOGIC", "DATA", "VOID", "GRID", "MASS", "AXIS", "FLOW", "CODE", "FORM", "CRAFT", "URBAN"];
+        const CYCLES = 6; const SPEED = 75; const STAGGER_WORD = 200; const STAGGER_BOX = 400;
+
+        let isTTSMuted = false;
+
+        function updateMuteButtonUI() {
+            const btn = document.getElementById('hero-mute-btn-el');
+            if (!btn) return;
+            if (isTTSMuted) {
+                btn.innerHTML = `
+                    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <line x1="23" y1="9" x2="17" y2="15"></line>
+                        <line x1="17" y1="9" x2="23" y2="15"></line>
+                    </svg>
+                `;
+                btn.title = "Unmute TTS Audio";
+            } else {
+                btn.innerHTML = `
+                    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                `;
+                btn.title = "Mute TTS Audio";
+            }
+        }
+
+        function toggleMuteTTS(event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            isTTSMuted = !isTTSMuted;
+            localStorage.setItem('tts_muted', isTTSMuted);
+            updateMuteButtonUI();
+            
+            if (isTTSMuted) {
+                if (activeAudio) {
+                    try {
+                        activeAudio.volume = 0;
+                    } catch (e) {}
+                }
+            } else {
+                if (activeAudio) {
+                    try {
+                        activeAudio.volume = 1;
+                    } catch (e) {}
+                }
+            }
+        }
+
+        function getRandomString(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789X/_#';
+            let res = '';
+            for (let i = 0; i < length; i++) {
+                res += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return res;
+        }
+
+        let activeAudio = null;
+        let isContinuousAudioPlaying = false; // flag indicating that the main custom .wav voiceover is active
+
+        function speakText(text, boxIndex, onWordSpeak) {
+            if (typeof window === 'undefined') return;
+
+            // If a continuous voiceover is active and playing, we don't trigger per-box TTS
+            if (isContinuousAudioPlaying && activeAudio) {
+                console.log(`Continuous voiceover is active. Skipping box speech for index ${boxIndex}`);
+                return;
+            }
+
+            // Check if there's a box-specific custom audio file (e.g. /voice_en_0.mp3 or /voice_en_0.wav)
+            const isTR = (currentLang === 'tr');
+            const lang = isTR ? 'tr' : 'en';
+            const baseSpecificPath = `/voice_${lang}_${boxIndex}`;
+            const volume = isTTSMuted ? 0 : 1;
+
+            const candidates = [
+                `${baseSpecificPath}.MP3`,
+                `${baseSpecificPath}.mp3`,
+                `${baseSpecificPath}.wav`
+            ];
+
+            async function tryPlaySpecific(index) {
+                if (index >= candidates.length) {
+                    // All step-specific candidates failed, do nothing
+                    return;
+                }
+                const path = candidates[index];
+                const cardAudio = new Audio(path);
+                cardAudio.volume = volume;
+                try {
+                    await cardAudio.play();
+                    if (activeAudio && activeAudio !== cardAudio) {
+                        try { activeAudio.pause(); } catch(e) {}
+                    }
+                    activeAudio = cardAudio;
+                    isContinuousAudioPlaying = false;
+                    console.log(`Playing step-specific custom audio: ${path}`);
+                } catch (e) {
+                    tryPlaySpecific(index + 1);
+                }
+            }
+            tryPlaySpecific(0);
+        }
+
+        function wordScramble(el, targetText, boxIndex = 0) {
+            if (!targetText || targetText.trim() === "") {
+                el.innerHTML = "";
+                return;
+            }
+            setTimeout(() => {
+                const words = targetText.split(" ");
+                el.innerHTML = "";
+                words.forEach((originalWord, wordIndex) => {
+                    const span = document.createElement("span");
+                    el.appendChild(span);
+                    setTimeout(() => {
+                        span.style.opacity = 1;
+                        let iterations = 0;
+                        const interval = setInterval(() => {
+                            span.innerText = RANDOM_WORDS[Math.floor(Math.random() * RANDOM_WORDS.length)];
+                            iterations++;
+                            if (iterations >= CYCLES) { 
+                                clearInterval(interval); 
+                                span.innerText = originalWord; 
+                                span.style.opacity = 1;
+                            }
+                        }, SPEED);
+                    }, wordIndex * STAGGER_WORD);
+                });
+            }, boxIndex * STAGGER_BOX);
+        }
+
+        let globalContent = { info: null, header: null, footer: null, hero: null };
+        let currentLang = 'en'; let currentPlayer = 'x'; let board = {}; let gameActive = true;
+        let projectList = []; let lbState = { project: null, index: 0 };
+        let sequencePlayed = false;
+        let isSequenceRunning = false;
+
+        async function loadSiteData() {
+            try {
+                const [info, header, footer, hero] = await Promise.all([
+                    fetch('/content_info.json').then(r => r.json()),
+                    fetch('/content_header.json').then(r => r.json()),
+                    fetch('/content_footer.json').then(r => r.json()),
+                    fetch('/content_hero.json').then(r => r.json())
+                ]);
+                globalContent = { info, header, footer, hero };
+                updateUI(); initFeed();
+            } catch (e) { console.error("Data Load Error", e); }
+        }
+
+        function updateHeroTranslations() {
+            const lang = currentLang;
+            const heroData = globalContent.hero ? globalContent.hero.boxes : null;
+            if (!heroData) return;
+
+            // Recalculate dynamic slot widths based on maximum line lengths to prevent wrapping
+            for (let i = 0; i < heroData.length; i++) {
+                const slotEl = document.getElementById('slot-' + i);
+                if (slotEl) {
+                    const linesText = heroData[i] ? heroData[i][lang] : [];
+                    const isMobile = window.innerWidth <= 768;
+                    if (isMobile) {
+                        slotEl.style.setProperty('--slot-width', '360px');
+                    } else {
+                        const fontSize = window.innerWidth >= 1101 ? 13.5 : 12;
+                        let maxLineWidth = 360; // minimum default fallback
+                        if (Array.isArray(linesText)) {
+                            linesText.forEach(lineText => {
+                                const words = lineText.split(" ").filter(w => w.length > 0);
+                                const charCount = lineText.length;
+                                // SpaceMonoV5 monospace char is ~0.61em wide; word gaps add ~0.35em per word spacing.
+                                const textWidth = charCount * (0.61 * fontSize) + words.length * (0.35 * fontSize);
+                                // Add left+right margin/padding of columns (40px padding + extra tolerance)
+                                const requiredWidth = Math.ceil(textWidth + 40 + 20);
+                                if (requiredWidth > maxLineWidth) {
+                                    maxLineWidth = requiredWidth;
+                                }
+                            });
+                        }
+                        slotEl.style.setProperty('--slot-width', maxLineWidth + 'px');
+                    }
+                }
+            }
+            
+            // Update big hero text if present
+            const centerTextEl = document.querySelector('.hero-center-text');
+            if (centerTextEl) {
+                if (sequencePlayed && !isSequenceRunning) {
+                    centerTextEl.innerText = globalContent.hero.last_big_hero_text[lang];
+                } else {
+                    centerTextEl.innerText = globalContent.hero.first_big_hero_text[lang];
+                }
+            }
+            
+            // Toggle circular play vs. replay button based on historical state
+            const btnEl = document.querySelector('.hero-play-btn');
+            if (btnEl) {
+                const playIcon = btnEl.querySelector('.play-icon');
+                const replayIcon = btnEl.querySelector('.replay-icon');
+                if (isSequenceRunning) {
+                    btnEl.style.opacity = "0.2";
+                    btnEl.style.pointerEvents = "none";
+                } else {
+                    btnEl.style.opacity = "1";
+                    btnEl.style.pointerEvents = "auto";
+                    if (sequencePlayed) {
+                        if (playIcon) playIcon.style.display = 'none';
+                        if (replayIcon) replayIcon.style.display = 'block';
+                    } else {
+                        if (playIcon) playIcon.style.display = 'block';
+                        if (replayIcon) replayIcon.style.display = 'none';
+                    }
+                }
+            }
+
+            // Handle frosted glass display on center stage only for replay state
+            const centerStage = document.getElementById('hero-center-stage');
+            if (centerStage) {
+                if (sequencePlayed && !isSequenceRunning) {
+                    centerStage.classList.add('played');
+                } else {
+                    centerStage.classList.remove('played');
+                }
+            }
+
+            // Update docked slots if sequence has completed and we aren't running
+            if (sequencePlayed && !isSequenceRunning) {
+                for (let i = 0; i < heroData.length; i++) {
+                    const slotEl = document.getElementById('slot-' + i);
+                    if (slotEl && slotEl.classList.contains('filled')) {
+                        const linesText = heroData[i] ? heroData[i][lang] : [];
+                        const cardBody = slotEl.querySelector('.hero-box-card');
+                        if (cardBody && Array.isArray(linesText)) {
+                            cardBody.innerHTML = linesText.map(lineText => {
+                                const lineWords = lineText.split(" ").map(w => `<span class="hero-word-span" style="opacity:1">${w}</span>`).join("");
+                                return `<div class="hero-line">${lineWords}</div>`;
+                            }).join("");
+                        }
+                    }
+                }
+            }
+            updateMuteButtonUI();
+        }
+
+        async function playHeroSequence() {
+            if (isSequenceRunning) return;
+            isSequenceRunning = true;
+            sequencePlayed = true;
+
+            const heroData = globalContent.hero ? globalContent.hero.boxes : null;
+            if (!heroData) {
+                isSequenceRunning = false;
+                return;
+            }
+
+            const isTR = (currentLang === 'tr');
+            const lang = isTR ? 'tr' : 'en';
+
+            const centerTextEl = document.querySelector('.hero-center-text');
+            const centerStage = document.getElementById('hero-center-stage');
+
+            // If a previous sequence is being replayed and center text in .played state is visible, fade it out smoothly first
+            if (centerTextEl && centerStage && centerStage.classList.contains('played')) {
+                centerTextEl.style.transition = 'opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
+                centerTextEl.style.opacity = '0';
+                centerTextEl.style.transform = 'scale(0.95)';
+                await new Promise(resolve => setTimeout(resolve, 600));
+                
+                // Clear the inline style overrides completely
+                centerTextEl.style.transition = '';
+                centerTextEl.style.opacity = '';
+                centerTextEl.style.transform = '';
+            }
+
+            // Ensure we are displaying the "first big hero text" during play/replay transition
+            if (centerTextEl) {
+                centerTextEl.innerText = globalContent.hero.first_big_hero_text[lang];
+            }
+
+            const container = document.getElementById('hero-boxes');
+            
+            if (container) {
+                const rect = container.getBoundingClientRect();
+                const absoluteElementTop = rect.top + (window.scrollY || window.pageYOffset);
+                const elementHeight = rect.height;
+                const viewportHeight = window.innerHeight;
+                const centerScroll = absoluteElementTop - (viewportHeight - elementHeight) / 2;
+                window.scrollTo({
+                    top: centerScroll - 5,
+                    behavior: 'smooth'
+                });
+            }
+
+            // Immediately stop current active audio if any
+            if (typeof window !== 'undefined') {
+                if (activeAudio) {
+                    try { activeAudio.pause(); } catch(e) {}
+                    activeAudio = null;
+                }
+            }
+
+            // --- Voiceover Playback Trigger: START SOUNDS IMMEDIATELY ---
+            const baseContinuousPath = `/voice_${lang}`;
+            const candidates = [
+                `${baseContinuousPath}.MP3`,
+                `${baseContinuousPath}.mp3`,
+                `${baseContinuousPath}.wav`
+            ];
+
+            isContinuousAudioPlaying = false;
+
+            async function tryPlayContinuous(index) {
+                if (index >= candidates.length) {
+                    console.warn(`Continuous voiceover not loaded or failed to play: checked ${candidates.join(', ')}`);
+                    activeAudio = null;
+                    isContinuousAudioPlaying = false;
+                    return;
+                }
+                const path = candidates[index];
+                const audio = new Audio(path);
+                audio.volume = isTTSMuted ? 0 : 1;
+                try {
+                    await audio.play();
+                    activeAudio = audio;
+                    isContinuousAudioPlaying = true;
+                    console.log(`Successfully playing continuous custom voiceover: ${path}`);
+                } catch (err) {
+                    tryPlayContinuous(index + 1);
+                }
+            }
+            tryPlayContinuous(0);
+
+            // Prepare state and trigger smooth zooming transition immediately
+            container.classList.remove('sequence-finished');
+            centerStage.classList.remove('played');
+            centerStage.classList.add('zooming');
+
+            // Wait exactly 4 seconds for cinematic text zoom-in before starting card animations
+            setTimeout(() => {
+                centerStage.classList.remove('zooming');
+                centerStage.classList.add('sequence-active');
+
+                // Initialize slots as clean & styled
+                for (let i = 0; i < heroData.length; i++) {
+                    const slotEl = document.getElementById('slot-' + i);
+                    if (slotEl) {
+                        slotEl.classList.remove('filled');
+                        slotEl.innerHTML = '';
+                    }
+                }
+
+                // Custom Generation Order: generate others first, then slot-1 (top-mid) at the very end
+                const animOrder = [0, 2, 3, 4, 5, 1];
+
+                const TOTAL_GENERATION_DURATION = 84000; // Exactly 1 min 24 seconds for card generation
+                const NUM_STEPS = animOrder.length; // 6 steps
+
+                // Sequential animation sequence
+                async function animateCard(stepIndex) {
+                    if (stepIndex >= NUM_STEPS) {
+                        // Sequence completed! Reset runner and shrink the gaps smoothly
+                        setTimeout(() => {
+                            container.classList.add('sequence-finished');
+                        }, 100);
+
+                        // Immediately play the slow zoom-out over 4 seconds for last big hero text
+                        if (centerTextEl) {
+                            centerTextEl.innerText = globalContent.hero.last_big_hero_text[lang];
+                        }
+                        centerStage.classList.remove('sequence-active');
+                        centerStage.classList.add('zooming-out');
+
+                        // Wait exactly 4 seconds for the zoom-out/shrinking effect animation
+                        setTimeout(() => {
+                            centerStage.classList.remove('zooming-out');
+                            centerStage.classList.add('played');
+                            isSequenceRunning = false;
+                            updateHeroTranslations();
+                        }, 4000);
+                        return;
+                    }
+
+                    const i = animOrder[stepIndex];
+                    const slotEl = document.getElementById('slot-' + i);
+                    const targetLines = heroData[i] ? heroData[i][currentLang] : [];
+                    if (!slotEl || !Array.isArray(targetLines) || targetLines.length === 0) {
+                        animateCard(stepIndex + 1);
+                        return;
+                    }
+                    const targetTextJoined = targetLines.join(" ");
+
+                    // Dynamically calculate individual step duration to sum to exactly TOTAL_GENERATION_DURATION
+                    const stepDuration = Math.round((stepIndex + 1) * (TOTAL_GENERATION_DURATION / NUM_STEPS)) - Math.round(stepIndex * (TOTAL_GENERATION_DURATION / NUM_STEPS));
+                    const revealDuration = stepDuration - 3800; // Complete reveal 3.8 seconds before step finishes (makes text generation snappier)
+                    const glideStartTime = stepDuration - 1800; // Glide has 1.8 seconds duration (leaves a beautiful 2.0s pause for the completed cards)
+
+                    // Measure targeted slot coordinates and size
+                    const targetRect = slotEl.getBoundingClientRect();
+                    const targetWidth = targetRect.width;
+                    const targetHeight = targetRect.height;
+
+                    const containerRect = container.getBoundingClientRect();
+
+                    // Calculate dead center coordinate pixels relative to the container
+                    const centerX = (containerRect.width - targetWidth) / 2;
+                    const centerY = (containerRect.height - targetHeight) / 2;
+
+                    // Create overlay flying card in the dead center with fixed final bounds
+                    const flyingCard = document.createElement('div');
+                    flyingCard.className = 'hero-flying-card at-center flying-slot-' + i;
+                    flyingCard.style.width = targetWidth + 'px';
+                    flyingCard.style.height = targetHeight + 'px';
+                    flyingCard.style.setProperty('--slot-width', targetWidth + 'px');
+                    flyingCard.style.left = centerX + 'px';
+                    flyingCard.style.top = centerY + 'px';
+                    flyingCard.style.padding = '20px';
+                    flyingCard.style.transform = 'scale(1.4)'; // Explicit starting scale to prevent sizing jump!
+                    flyingCard.style.transformOrigin = 'center center';
+                    
+                    container.appendChild(flyingCard);
+
+                    // Populate with spaces for words inside separate line elements
+                    const spans = [];
+                    const words = [];
+                    targetLines.forEach((lineText) => {
+                        const lineDiv = document.createElement('div');
+                        lineDiv.className = 'hero-line';
+                        const lineWords = lineText.split(" ");
+                        lineWords.forEach((word) => {
+                            if (!word) return;
+                            const span = document.createElement("span");
+                            span.className = "hero-word-span";
+                            span.innerText = word;
+                            span.style.visibility = "hidden";
+                            span.style.opacity = "0";
+                            lineDiv.appendChild(span);
+                            spans.push(span);
+                            words.push(word);
+                        });
+                        flyingCard.appendChild(lineDiv);
+                    });
+
+                    // Fire sequential scrambling aligned with voice soundwaves!
+                    const revealedIndices = new Set();
+                    const wordInterval = revealDuration / words.length;
+                    const SPEED_SEQ = 40; // 40ms per scramble cycle
+                    const dynamicCycles = Math.max(5, Math.floor(wordInterval / SPEED_SEQ));
+
+                    function revealWord(wordIndex) {
+                        if (wordIndex >= words.length) return;
+                        if (revealedIndices.has(wordIndex)) return;
+                        revealedIndices.add(wordIndex);
+
+                        const span = spans[wordIndex];
+                        if (span) {
+                            span.style.visibility = "visible";
+                            span.style.opacity = 1;
+                            let iterations = 0;
+                            const originalWord = words[wordIndex];
+                            const interval = setInterval(() => {
+                                span.innerText = getRandomString(originalWord.length);
+                                iterations++;
+                                if (iterations >= dynamicCycles) {
+                                    clearInterval(interval);
+                                    span.innerText = originalWord;
+                                }
+                            }, SPEED_SEQ);
+                        }
+                    }
+
+                    // Play candidate voice files if not continuous file
+                    speakText(targetTextJoined, i, (wordIndex) => {
+                        revealWord(wordIndex);
+                    });
+
+                    // Dual-track fallback layer: ensures words reveal organically
+                    words.forEach((_, idx) => {
+                        setTimeout(() => {
+                            revealWord(idx);
+                        }, idx * wordInterval);
+                    });
+
+                    // Wait for reveal phase to finish before gliding
+                    setTimeout(() => {
+                        // Recalculate fresh coordinates relative to container
+                        const currentContainerRect = container.getBoundingClientRect();
+
+                        // Measure targeted slot coordinates
+                        const currentTargetRect = slotEl.getBoundingClientRect();
+                        const targetLeft = currentTargetRect.left - currentContainerRect.left;
+                        const targetTop = currentTargetRect.top - currentContainerRect.top;
+
+                        // Trigger the visual glide and scale transition
+                        requestAnimationFrame(() => {
+                            flyingCard.style.transition = 'left 1.8s cubic-bezier(0.16, 1, 0.3, 1), top 1.8s cubic-bezier(0.16, 1, 0.3, 1), transform 1.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1)';
+                            flyingCard.classList.remove('at-center');
+                            flyingCard.style.left = targetLeft + 'px';
+                            flyingCard.style.top = targetTop + 'px';
+                            flyingCard.style.transform = 'scale(1.0)';
+                        });
+
+                    }, glideStartTime);
+
+                    // Dock into permanent grid DOM tree nodes exactly at the end of stepDuration
+                    setTimeout(() => {
+                        slotEl.classList.add('filled');
+                        slotEl.innerHTML = '';
+
+                        const dockedCard = document.createElement('div');
+                        dockedCard.className = 'hero-box-card docked';
+                        dockedCard.innerHTML = flyingCard.innerHTML;
+                        
+                        // Force span states as solid visible
+                        dockedCard.querySelectorAll('.hero-word-span').forEach(sp => {
+                            sp.style.opacity = 1;
+                            sp.style.visibility = 'visible';
+                        });
+
+                        slotEl.appendChild(dockedCard);
+                        flyingCard.remove();
+
+                        // Trigger next card animation
+                        animateCard(stepIndex + 1);
+                    }, stepDuration);
+                }
+
+                animateCard(0);
+
+            }, 4000);
+        }
+
+        function updateUI() {
+            const lang = currentLang; const info = globalContent.info; if (!info) return;
+            const heroData = globalContent.hero ? globalContent.hero.boxes : null;
+            if(heroData) {
+                const heroCont = document.getElementById('hero-boxes');
+                if (!heroCont.dataset.initialized) {
+                    heroCont.dataset.initialized = "true";
+                    
+                    // Generate initial empty blueprint slots & center stage controller
+                    let slotsHTML = Array.from({length: heroData.length}).map((_, i) => `
+                        <div class="hero-grid-slot" id="slot-${i}">
+                        </div>
+                    `).join('');
+                    
+                    let centerStageHTML = `
+                        <div id="hero-center-stage">
+                            <div class="hero-center-text"></div>
+                            <button class="hero-play-btn" onclick="playHeroSequence()" aria-label="Play Transformation">
+                                <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                <svg class="replay-icon" viewBox="0 0 24 24" style="display:none;"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                            </button>
+                        </div>
+                    `;
+
+                    let muteButtonHTML = `
+                        <button class="hero-mute-btn" onclick="toggleMuteTTS(event)" id="hero-mute-btn-el" aria-label="Toggle Speech Audio">
+                        </button>
+                    `;
+                    
+                    heroCont.innerHTML = slotsHTML + centerStageHTML + muteButtonHTML;
+                    updateMuteButtonUI();
+                }
+                updateHeroTranslations();
+            }
+            let sidebarHTML = info.sections.map(section => {
+                let content = '';
+                if (section.type === 'text') content = section.content.map(p => `<p class="txt-light">${p[lang]}</p>`).join('');
+                else if (section.type === 'team') content = section.members.map(m => `<div style="margin-bottom:25px"><span class="txt-medium">${m.name}</span><span class="profession">${m.profession[lang]}</span><p class="bio txt-light">${m.bio[lang]}</p></div>`).join('');
+                else if (section.type === 'contact') content = `<div style="margin-bottom:25px"><span class="txt-medium">${section.office_name[lang]}</span><p class="txt-light">${section.address}</p></div>${section.socials.map(s => `<a href="${s.url}" target="_blank" class="contact-link txt-medium">${s.label}</a>`).join('')}`;
+                return `<div class="sidebar-section"><h3>${section.title[lang]}</h3>${content}</div>`;
+            }).join('');
+            document.querySelectorAll('.sidebar-info-container').forEach(el => el.innerHTML = sidebarHTML);
+            if (globalContent.header && gameActive) {
+                document.getElementById('header-log-tag').innerText = globalContent.header.log_version[lang];
+                document.getElementById('info-btn').innerText = document.getElementById('mobile-popup').style.display === 'block' ? globalContent.header.close_label : globalContent.header.info_label;
+            }
+            if (globalContent.footer) {
+                document.getElementById('footer-status').innerText = globalContent.footer.system_status;
+                document.getElementById('footer-copy').innerText = globalContent.footer.copyright;
+            }
+        }
+
+        async function probeImage(f, i) {
+            const exts = ['jpg', 'jpeg', 'png', 'webp', 'JPG', 'JPEG', 'PNG', 'WEBP'];
+            for (const ext of exts) {
+                const url = `images/${f}/${i}.${ext}`;
+                const exists = await new Promise(res => {
+                    const img = new Image();
+                    img.onload = () => res(true);
+                    img.onerror = () => res(false);
+                    img.src = url;
+                });
+                if (exists) return url;
+            }
+            return null;
+        }
+
+        async function initFeed() {
+            const feed = document.getElementById('project-feed');
+            feed.innerHTML = '';
+            projectList = [];
+            
+            let projects = [];
+            try {
+                const res = await fetch('images/projects.json');
+                if (res.ok) projects = await res.json();
+            } catch (e) {}
+            
+            const projectFolders = (projects && projects.length > 0) ? projects : ['project1', 'project2', 'project3'];
+
+            for (const folder of projectFolders) {
+                try {
+                    let meta = null;
+                    try {
+                        const res = await fetch(`images/${folder}/meta.json`);
+                        if (res.ok) meta = await res.json();
+                    } catch (e) {}
+
+                    const firstImg = await probeImage(folder, 1);
+                    
+                    if (meta || firstImg) {
+                        if (!meta) {
+                            meta = { 
+                                tag: `[log_auto]`, 
+                                title: folder.replace(/_/g, ' '), 
+                                en: `autonomous log detection. structural void identified in directory hierarchy.`, 
+                                tr: `otonom log tespiti. dizin hiyerarşisinde yapısal boşluk saptandı.`, 
+                                specs: `loc: unknown // env: server_side // node: 01` 
+                            };
+                        }
+                        
+                        let imgs = [];
+                        if (firstImg) {
+                            imgs.push(firstImg);
+                            const more = await Promise.all(Array.from({length: 9}, (_, i) => i + 2).map(iNum => probeImage(folder, iNum)));
+                            more.forEach(p => { if(p) imgs.push(p); });
+                        } else {
+                            imgs.push('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop');
+                        }
+
+                        const p = { id: folder, meta, imgs, cur: 0 };
+                        projectList.push(p);
+
+                        const row = document.createElement('section');
+                        row.className = 'project-row';
+                        row.innerHTML = `
+                            <div class="project-info-row">
+                                <div class="info-col info-col-1">
+                                    <div class="info-item"><div class="info-label">LOG_ID</div><div class="info-value">#${p.meta.log_id || '00'}</div></div>
+                                    <div class="info-item"><div class="info-label">DATE</div><div class="info-value">${p.meta.date || '----'}</div></div>
+                                    <div class="info-item"><div class="info-label">SIZE</div><div class="info-value">${p.meta.size || '----'}</div></div>
+                                    <div class="info-item"><div class="info-label">STATUS</div><div class="info-value">${p.meta.status || '----'}</div></div>
+                                </div>
+                                <div class="info-col info-col-2">
+                                    <div class="info-item"><div class="info-label">LOCATION</div><div class="info-value">${p.meta.location || '----'}</div></div>
+                                    <div class="info-item"><div class="info-label">TYPE</div><div class="info-value">${p.meta.type || '----'}</div></div>
+                                    <div class="info-item"><div class="info-label">ROLE</div><div class="info-value">${p.meta.role || '----'}</div></div>
+                                    <div class="info-item"><div class="info-label">CLIENT</div><div class="info-value">${p.meta.client || '----'}</div></div>
+                                    <div class="info-item"><div class="info-label">TEAM</div><div class="info-value">${p.meta.team || '----'}</div></div>
+                                </div>
+                                <div class="info-col info-col-3">
+                                    <div class="info-title">${p.meta.title}</div>
+                                    <div class="info-body">${currentLang === 'en' ? p.meta.en : p.meta.tr}</div>
+                                </div>
+                            </div>
+                            <div class="slider-container" id="slider-${p.id}">
+                                <div class="slider-track" onclick="openLightbox('${p.id}')">${p.imgs.map(s => `<img src="${s}" class="slide-img">`).join('')}</div>
+                                ${p.imgs.length > 1 ? `<div class="slider-nav">
+                                    <div class="nav-zone" style="left:0" onclick="moveSlide('${p.id}', -1, event)"><div class="nav-triangle">◀</div></div>
+                                    <div class="nav-zone" style="right:0" onclick="moveSlide('${p.id}', 1, event)"><div class="nav-triangle">▶</div></div>
+                                </div>` : ''}
+                            </div>`;
+                        feed.appendChild(row);
+                    }
+                } catch (err) {
+                    console.warn(`Error loading project ${folder}`, err);
+                }
+            }
+        }
+
+        function moveSlide(id, dir, e) { if(e) e.stopPropagation(); const p = projectList.find(x => x.id === id); const container = document.getElementById(`slider-${id}`); const track = container.querySelector('.slider-track'); p.cur = (p.cur + dir + p.imgs.length) % p.imgs.length; track.style.transform = `translateX(-${p.cur * 100}%)`; }
+        function openLightbox(id) { if (window.innerWidth < 1100) return; const p = projectList.find(x => x.id === id); lbState = { project: p, index: p.cur }; updateLightbox(); document.getElementById('lightbox').style.display = 'flex'; }
+        function updateLightbox() { const p = lbState.project; document.getElementById('lightbox-img').src = p.imgs[lbState.index]; document.getElementById('lb-dots').innerHTML = p.imgs.length > 1 ? p.imgs.map((_, i) => `<div class="dot ${i === lbState.index ? 'active' : ''}"></div>`).join('') : ''; }
+        function changeLightbox(dir) { lbState.index = (lbState.index + dir + lbState.project.imgs.length) % lbState.project.imgs.length; updateLightbox(); }
+        function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
+        function toggleLang() {
+            currentLang = currentLang === 'en' ? 'tr' : 'en';
+            if (typeof window !== 'undefined') {
+                if (activeAudio) {
+                    try { activeAudio.pause(); } catch(e) {}
+                    activeAudio = null;
+                }
+            }
+            document.querySelectorAll('.en-toggle').forEach(el => el.classList.toggle('active', currentLang === 'en'));
+            document.querySelectorAll('.tr-toggle').forEach(el => el.classList.toggle('active', currentLang === 'tr'));
+            updateUI();
+            projectList.forEach(p => {
+                const row = document.getElementById(`slider-${p.id}`).closest('.project-row');
+                const desc = row.querySelector('.info-body');
+                if (desc) desc.innerText = currentLang === 'en' ? p.meta.en : p.meta.tr;
+            });
+        }
+        function togglePopup() { const p = document.getElementById('mobile-popup'); const isVis = p.style.display === 'block'; p.style.display = isVis ? 'none' : 'block'; updateUI(); }
+
+        window.addEventListener('mousedown', (e) => {
+            if (!gameActive || e.button === 1 || e.target.closest('aside, header, button, .nav-zone, #lightbox')) return;
+            const col = Math.floor(e.clientX / 40); const row = Math.floor(e.clientY / 40);
+            const key = `${col},${row}`;
+            if (!board[key]) {
+                board[key] = currentPlayer;
+                const t = document.createElement('div'); t.className = 'game-token'; t.innerText = currentPlayer;
+                t.style.position = 'fixed'; t.style.left = (col * 40) + 'px'; t.style.top = (row * 40) + 'px';
+                t.style.color = currentPlayer === 'x' ? 'var(--orange)' : 'black';
+                t.dataset.coord = key; document.getElementById('game-layer').appendChild(t);
+                const winPath = checkWin(col, row, currentPlayer);
+                if (winPath) {
+                    gameActive = false;
+                    winPath.forEach(coords => { const el = document.querySelector(`[data-coord="${coords[0]},${coords[1]}"]`); if (el) el.style.animation = 'winPulse 0.4s infinite alternate'; });
+                    document.getElementById('header-log-tag').innerText = `[alert: winner_${currentPlayer}_detected]`;
+                    document.getElementById('header-log-tag').style.color = 'var(--orange)';
+                    document.getElementById('header-log-tag').style.fontWeight = '700';
+                } else currentPlayer = (currentPlayer === 'x') ? 'o' : 'x';
+            }
+        });
+        function checkWin(c, r, p) { const dirs = [[1,0], [0,1], [1,1], [1,-1]]; for (let [dx, dy] of dirs) { let path = [[c, r]]; for (let i = 1; i < 3; i++) { if (board[`${c+(dx*i)},${r+(dy*i)}`] === p) path.push([c+(dx*i), r+(dy*i)]); else break; } for (let i = 1; i < 3; i++) { if (board[`${c-(dx*i)},${r-(dy*i)}`] === p) path.push([c-(dx*i), r-(dy*i)]); else break; } if (path.length >= 3) return path; } return null; }
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toTimeString().split(' ')[0]; }, 1000);
+        window.addEventListener('mousemove', (e) => { document.getElementById('coords').innerText = `x: ${String(e.clientX).padStart(3, '0')} y: ${String(e.clientY).padStart(3, '0')}`; });
+        window.addEventListener('resize', () => {
+            if (globalContent && globalContent.hero) {
+                updateHeroTranslations();
+            }
+        });
+        loadSiteData();
+    </script>
+</body>
+</html>
